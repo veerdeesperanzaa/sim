@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Sueldo — Poder Judicial de Mendoza</title>
+
+  <!-- ============================================================
+    FUENTE: Se importa de Google Fonts, gratis.
+    Para cambiarla, buscás otra en fonts.google.com y reemplazás
+    el link y el nombre en font-family más abajo.
+  ============================================================ -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+      VARIABLES GLOBALES DE COLOR Y ESTILO
+      Para cambiar la paleta de colores, solo modificás estos valores.
+      El resto del archivo los usa automáticamente.
+    ============================================================ */
+    :root {
+      --color-fondo:         #F4F3EF;
+      --color-superficie:    #FFFFFF;
+      --color-borde:         #E0DDD6;
+      --color-borde-fuerte:  #C8C4BB;
+
+      --color-acento:        #1A5C3A;      /* verde oscuro institucional */
+      --color-acento-suave:  #E8F2EC;
+      --color-acento-texto:  #0F3D26;
+
+      --color-alerta:        #7A3A10;
+      --color-alerta-suave:  #FBF0E8;
+
+      --color-texto-1:       #1C1B18;      /* texto principal */
+      --color-texto-2:       #5C5A53;      /* texto secundario */
+      --color-texto-3:       #9C9A93;      /* texto terciario / hints */
+
+      --color-negativo:      #8B2020;
+      --color-positivo:      #1A5C3A;
+
+      --radio-sm:   6px;
+      --radio-md:   10px;
+      --radio-lg:   16px;
+      --radio-xl:   20px;
+
+      --sombra-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --sombra-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    /* ============================================================
+      RESET Y BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--color-texto-1);
+      background: var(--color-fondo);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ============================================================
+      CONTENEDOR PRINCIPAL
+      max-width controla cuánto se expande en pantallas grandes.
+    ============================================================ */
+    .contenedor {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+      ENCABEZADO
+    ============================================================ */
+    .encabezado {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-borde);
+    }
+    .encabezado-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.75rem;
+    }
+    .logo-icono {
+      width: 36px;
+      height: 36px;
+      background: var(--color-acento);
+      border-radius: var(--radio-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-icono svg { width: 20px; height: 20px; fill: white; }
+    .logo-texto { font-size: 13px; font-weight: 500; color: var(--color-texto-2); }
+    .encabezado h1 { font-size: 24px; font-weight: 600; color: var(--color-texto-1); margin-bottom: 4px; }
+    .encabezado p { font-size: 14px; color: var(--color-texto-2); }
+
+    /* ============================================================
+      TARJETAS DE SECCIÓN
+    ============================================================ */
+    .tarjeta {
+      background: var(--color-superficie);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--sombra-sm);
+    }
+    .tarjeta-titulo {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-texto-3);
+      margin-bottom: 1.1rem;
+    }
+
+    /* ============================================================
+      GRILLA DE CAMPOS
+    ============================================================ */
+    .fila { display: grid; gap: 12px; margin-bottom: 12px; }
+    .fila.dos   { grid-template-columns: 1fr 1fr; }
+    .fila.tres  { grid-template-columns: 1fr 1fr 1fr; }
+    .fila.uno   { grid-template-columns: 1fr; }
+    .fila:last-child { margin-bottom: 0; }
+
+    .campo { display: flex; flex-direction: column; gap: 5px; }
+    .campo label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-texto-2);
+    }
+
+    /* ============================================================
+      INPUTS Y SELECTS
+      Para cambiar el estilo de los campos, modificás aquí.
+    ============================================================ */
+    select, input[type="number"] {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--color-texto-1);
+      background: var(--color-fondo);
+      border: 1px solid var(--color-borde-fuerte);
+      border-radius: var(--radio-md);
+      padding: 8px 12px;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C5A53' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--color-acento);
+      box-shadow: 0 0 0 3px rgba(26,92,58,0.12);
+      background-color: white;
+    }
+    input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+
+    /* ============================================================
+      TOGGLES (palancas sí/no)
+    ============================================================ */
+    .toggle-lista { display: flex; flex-direction: column; gap: 2px; }
+    .toggle-fila {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-borde);
+    }
+    .toggle-fila:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-fila:first-child { padding-top: 0; }
+    .toggle-info { flex: 1; padding-right: 1rem; }
+    .toggle-nombre { font-size: 14px; font-weight: 500; color: var(--color-texto-1); }
+    .toggle-desc { font-size: 12px; color: var(--color-texto-3); margin-top: 1px; }
+
+    .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+      position: absolute; inset: 0;
+      background: var(--color-borde-fuerte);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .switch input:checked + .switch-slider { background: var(--color-acento); }
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .switch-slider::before { transform: translateX(18px); }
+
+    /* ============================================================
+      TARJETA DE RESULTADOS
+    ============================================================ */
+    .tarjeta-resultado {
+      background: var(--color-superficie);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-lg);
+      overflow: hidden;
+      box-shadow: var(--sombra-md);
+      margin-bottom: 1rem;
+    }
+
+    /* Banda superior con bruto/neto */
+    .resultado-header {
+      background: var(--color-acento);
+      padding: 1.25rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .resultado-metrica { }
+    .resultado-metrica-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 4px;
+    }
+    .resultado-metrica-valor {
+      font-size: 28px;
+      font-weight: 600;
+      color: white;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: -0.02em;
+    }
+    .resultado-metrica-valor.neto { color: #A8EDCA; }
+    .resultado-metrica.separado {
+      border-left: 1px solid rgba(255,255,255,0.2);
+      padding-left: 1rem;
+    }
+
+    /* Detalle de conceptos */
+    .resultado-detalle { padding: 1.25rem 1.5rem; }
+    .detalle-subtitulo {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-texto-3);
+      margin-bottom: 0.75rem;
+      margin-top: 1rem;
+    }
+    .detalle-subtitulo:first-child { margin-top: 0; }
+
+    .linea {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--color-borde);
+      gap: 8px;
+    }
+    .linea:last-child { border-bottom: none; }
+    .linea-nombre { font-size: 13px; color: var(--color-texto-2); flex: 1; }
+    .linea-valor {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-texto-1);
+      font-family: 'DM Mono', monospace;
+      white-space: nowrap;
+    }
+    .linea-valor.negativo { color: var(--color-negativo); }
+    .linea-valor.inactivo { color: var(--color-texto-3); font-weight: 400; font-family: 'DM Sans', sans-serif; font-style: italic; }
+    .linea-valor.positivo { color: var(--color-positivo); }
+
+    .linea.subtotal {
+      border-top: 1px solid var(--color-borde-fuerte);
+      border-bottom: none;
+      margin-top: 4px;
+      padding-top: 10px;
+    }
+    .linea.subtotal .linea-nombre { font-weight: 600; font-size: 14px; color: var(--color-texto-1); }
+    .linea.subtotal .linea-valor { font-size: 15px; }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-left: 6px;
+      vertical-align: middle;
+      letter-spacing: 0.03em;
+    }
+    .badge-verde { background: var(--color-acento-suave); color: var(--color-acento-texto); }
+    .badge-naranja { background: var(--color-alerta-suave); color: var(--color-alerta); }
+
+    /* ============================================================
+      NOTA AL PIE
+    ============================================================ */
+    .nota {
+      font-size: 11.5px;
+      color: var(--color-texto-3);
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--color-borde);
+      line-height: 1.5;
+    }
+    .nota a { color: var(--color-acento); text-decoration: none; }
+    .nota strong { font-weight: 500; color: var(--color-texto-2); }
+
+    /* ============================================================
+      RESPONSIVE — pantallas chicas (celular)
+    ============================================================ */
+    @media (max-width: 520px) {
+      body { padding: 1rem 0.75rem 3rem; }
+      .fila.dos, .fila.tres { grid-template-columns: 1fr; }
+      .resultado-header { grid-template-columns: 1fr; }
+      .resultado-metrica.separado { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 0.75rem; }
+      .resultado-metrica-valor { font-size: 22px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="contenedor">
+
+  <!-- ENCABEZADO -->
+  <header class="encabezado">
+    <div class="encabezado-logo">
+      <div class="logo-icono">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="logo-texto">Poder Judicial de Mendoza</span>
+    </div>
+    <h1>Simulador de Sueldo</h1>
+    <p>Completá los datos de tu cargo para calcular tu sueldo estimado. Los resultados se actualizan al instante.</p>
+  </header>
+
+  <!-- SECCIÓN 1: DATOS DEL CARGO -->
+  <div class="tarjeta">
+    <p class="tarjeta-titulo">Datos del cargo</p>
+
+    <div class="fila dos">
+      <div class="campo">
+        <label for="clase">Clase / Categoría</label>
+        <select id="clase" onchange="calcular()">
+          <option value="1">Clase 1</option>
+          <option value="2">Clase 2</option>
+          <option value="3">Clase 3</option>
+          <option value="4">Clase 4</option>
+          <option value="5">Clase 5</option>
+          <option value="6">Clase 6</option>
+          <option value="7">Clase 7</option>
+          <option value="8">Clase 8</option>
+          <option value="9" selected>Clase 9</option>
+          <option value="11">Clase 11</option>
+          <option value="12">Clase 12</option>
+          <option value="13">Clase 13</option>
+          <option value="17">Clase 17</option>
+          <option value="18">Clase 18</option>
+          <option value="19">Clase 19</option>
+          <option value="20">Clase 20</option>
+          <option value="21">Clase 21</option>
+          <option value="22">Clase 22</option>
+          <option value="23">Clase 23</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="periodo">Período</label>
+        <!--
+          CÓMO AGREGAR UN NUEVO PERÍODO:
+          1. Agregás una línea <option> acá con el nuevo valor
+          2. Agregás ese valor en el objeto CLASES más abajo en el script
+          3. Agregás el monto del Adicional Estado Judicial en ADIC3179
+        -->
+        <select id="periodo" onchange="calcular()">
+          <option value="feb24">Febrero 2024</option>
+          <option value="mayo24">Mayo 2024</option>
+          <option value="nov24" selected>Noviembre 2024</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fila dos">
+      <div class="campo">
+        <label for="antiguedad">Años de antigüedad</label>
+        <input type="number" id="antiguedad" value="10" min="0" max="40" step="1" onchange="calcular()" />
+      </div>
+
+      <div class="campo">
+        <label for="titulo">Título / Bloqueo</label>
+        <!--
+          Los porcentajes son sobre la clase.
+          Si agregás un nuevo título, también lo agregás en TITULO_RATES del script.
+        -->
+        <select id="titulo" onchange="calcular()">
+          <option value="bloqueo">Sin título universitario (bloqueo 70%)</option>
+          <option value="secundario">Título secundario (15%)</option>
+          <option value="escribano">Escribano actuario (20%)</option>
+          <option value="universitario5">Universitario 5 años (40%)</option>
+          <option value="especializacion">+ Especialización (15%)</option>
+          <option value="maestria">+ Maestría (25%)</option>
+          <option value="doctorado">+ Doctorado (40%)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: ADICIONALES -->
+  <div class="tarjeta">
+    <p class="tarjeta-titulo">Adicionales y suplementos</p>
+    <div class="toggle-lista">
+
+      <div class="toggle-fila">
+        <div class="toggle-info">
+          <div class="toggle-nombre">Código Procesal Penal (CPP)</div>
+          <div class="toggle-desc">Suplemento fuero penal / Defensa Pública — 40% de la clase</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="cpp" onchange="calcular()"><span class="switch-slider"></span></label>
+      </div>
+
+      <div class="toggle-fila">
+        <div class="toggle-info">
+          <div class="toggle-nombre">Asistencia perfecta</div>
+          <div class="toggle-desc">Sin faltas en el mes — 15% del presentismo</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="asistencia" checked onchange="calcular()"><span class="switch-slider"></span></label>
+      </div>
+
+      <div class="toggle-fila">
+        <div class="toggle-info">
+          <div class="toggle-nombre">Mayor dedicación 50%</div>
+          <div class="toggle-desc">Convenios SINTYS / SIREPRO — 50% sobre clase + antigüedad + título</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="mayordedicacion" onchange="calcular()"><span class="switch-slider"></span></label>
+      </div>
+
+      <div class="toggle-fila">
+        <div class="toggle-info">
+          <div class="toggle-nombre">Zona desfavorable (Malargüe)</div>
+          <div class="toggle-desc">Personal con asiento en Malargüe — 60% de la clase</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="zona" onchange="calcular()"><span class="switch-slider"></span></label>
+      </div>
+
+      <div class="toggle-fila">
+        <div class="toggle-info">
+          <div class="toggle-nombre">Asignación familiar por cónyuge</div>
+          <div class="toggle-desc">Monto fijo no remunerativo — $ 180</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="asignfam" onchange="calcular()"><span class="switch-slider"></span></label>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: RESULTADOS -->
+  <div class="tarjeta-resultado">
+
+    <!-- Totales destacados -->
+    <div class="resultado-header">
+      <div class="resultado-metrica">
+        <div class="resultado-metrica-label">Sueldo bruto</div>
+        <div class="resultado-metrica-valor" id="res-bruto">—</div>
+      </div>
+      <div class="resultado-metrica separado">
+        <div class="resultado-metrica-label">Sueldo neto</div>
+        <div class="resultado-metrica-valor neto" id="res-neto">—</div>
+      </div>
+    </div>
+
+    <!-- Detalle línea por línea -->
+    <div class="resultado-detalle">
+
+      <p class="detalle-subtitulo">Haberes</p>
+
+      <div class="linea">
+        <span class="linea-nombre">1003 · Asignación de la clase</span>
+        <span class="linea-valor" id="bd-clase">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">
+          Bloqueo / Título
+          <span class="badge badge-naranja" id="badge-titulo-tipo"></span>
+        </span>
+        <span class="linea-valor" id="bd-titulo">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">1716 · Antigüedad <span class="badge badge-verde" id="badge-anios"></span></span>
+        <span class="linea-valor" id="bd-antig">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">2343 · Suplemento CPP</span>
+        <span class="linea-valor" id="bd-cpp">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">2719 · Presentismo (10%)</span>
+        <span class="linea-valor" id="bd-pres">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">1078 · Asistencia perfecta (15% del pres.)</span>
+        <span class="linea-valor" id="bd-asist">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">2739 · Dto. 1723/2005 (25,5%)</span>
+        <span class="linea-valor" id="bd-dto1723">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">3422 · Dto. 2585/2007 (13%)</span>
+        <span class="linea-valor" id="bd-dto2585">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">3179 · Adicional Estado Judicial 2010</span>
+        <span class="linea-valor" id="bd-3179">—</span>
+      </div>
+      <div class="linea" id="linea-zona">
+        <span class="linea-nombre">Zona Malargüe (60%)</span>
+        <span class="linea-valor" id="bd-zona">—</span>
+      </div>
+      <div class="linea" id="linea-md">
+        <span class="linea-nombre">1653 · Mayor dedicación (50%)</span>
+        <span class="linea-valor" id="bd-md">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">3300 · Asig. familiar cónyuge</span>
+        <span class="linea-valor" id="bd-fam">—</span>
+      </div>
+
+      <div class="linea subtotal">
+        <span class="linea-nombre">Total bruto</span>
+        <span class="linea-valor" id="bd-bruto-sub">—</span>
+      </div>
+
+      <p class="detalle-subtitulo" style="margin-top:1.25rem">Descuentos</p>
+
+      <div class="linea">
+        <span class="linea-nombre">6004 · Jubilación (11%)</span>
+        <span class="linea-valor negativo" id="bd-jubil">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">7119/7123/7140 · OSEP (6% total)</span>
+        <span class="linea-valor negativo" id="bd-osep">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">7019 · Cuota judicial (2% referencial) ⚠</span>
+        <span class="linea-valor negativo" id="bd-cuota">—</span>
+      </div>
+      <div class="linea">
+        <span class="linea-nombre">IPV + Seguro mutual (montos fijos)</span>
+        <span class="linea-valor negativo">− $ 1.912</span>
+      </div>
+
+      <div class="linea subtotal">
+        <span class="linea-nombre">Sueldo neto estimado</span>
+        <span class="linea-valor positivo" id="bd-neto-sub">—</span>
+      </div>
+
+    </div>
+
+    <div class="nota">
+      <strong>⚠ Cuota judicial (7019):</strong> calculada provisionalmente al 2% del bruto.
+      La base exacta de cálculo está pendiente de confirmación normativa.<br>
+      <strong>Nota:</strong> este simulador es orientativo. Los valores reales pueden variar
+      por conceptos no contemplados (Empleado Judicial, OSEP indirecto, etc.)
+      que están pendientes de confirmación.<br><br>
+      <!-- ============================================================
+        CÓMO VINCULAR UN GOOGLE SHEET:
+        Publicá tu hoja como CSV en Google Sheets:
+        Archivo → Compartir → Publicar en la web → formato CSV
+        Pegá la URL donde dice TU_URL_AQUI más abajo en el script.
+        Descomentá las líneas de fetch() y comentá CLASES manual.
+      ============================================================ -->
+      Para actualizar los valores de clase cuando hay una paritaria,
+      editá el objeto <code>CLASES</code> en el código fuente (buscar el comentario
+      "ACTUALIZAR PARITARIA AQUÍ").
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ================================================================
+    TABLA DE VALORES DE CLASE POR PERÍODO
+    ---------------------------------------------------------------
+    ACTUALIZAR PARITARIA AQUÍ:
+    Cuando hay un aumento, agregás un nuevo bloque con el nombre
+    del período (ej: "jun25") y los valores de cada clase.
+    También actualizás el <select id="periodo"> arriba con ese valor.
+
+    Los valores están en pesos. Fuente: archivo basicos2019.xlsx
+  ================================================================ */
+  const CLASES = {
+    feb24: {
+      1:312393, 2:293720, 3:270801, 4:250007, 5:241949,
+      6:233890, 7:219467, 8:214242, 9:197450,
+      11:179297, 12:173605, 13:166086,
+      17:184500, 18:176981, 19:167309, 20:161937,
+      21:156566, 22:151197, 23:145825
+    },
+    mayo24: {
+      1:353430, 2:332304, 3:306374, 4:282848, 5:273732,
+      6:264615, 7:248297, 8:242385, 9:223388,
+      11:202850, 12:196410, 13:187904,
+      17:208736, 18:200230, 19:189287, 20:183209,
+      21:177134, 22:171058, 23:164981
+    },
+    nov24: {
+      1:430375, 2:404649, 3:373074, 4:344427, 5:333325,
+      6:322223, 7:302353, 8:295154, 9:272021,
+      11:247012, 12:239170, 13:228812,
+      17:254179, 18:243821, 19:230497, 20:223096,
+      21:215697, 22:208299, 23:200898
+    }
+    /* Para agregar un período nuevo:
+    ,jun25: {
+      1:XXXXX, 2:XXXXX, ... etc
+    } */
+  };
+
+  /* ================================================================
+    ADICIONAL ESTADO JUDICIAL 2010 (3179)
+    Monto fijo por período — actualizar con cada paritaria.
+  ================================================================ */
+  const ADIC3179 = {
+    feb24:  18247,
+    mayo24: 38802,
+    nov24:  38802
+  };
+
+  /* ================================================================
+    PORCENTAJES DE TÍTULO SOBRE LA CLASE
+    Si agregás un nuevo título en el <select>, también lo agregás acá.
+  ================================================================ */
+  const TITULO_RATES = {
+    bloqueo:       0.70,
+    secundario:    0.15,
+    escribano:     0.20,
+    universitario5:0.40,
+    especializacion:0.15,
+    maestria:      0.25,
+    doctorado:     0.40
+  };
+
+  const TITULO_LABELS = {
+    bloqueo:        'Bloqueo',
+    secundario:     'Sec.',
+    escribano:      'Escr.',
+    universitario5: 'Univ.',
+    especializacion:'Espec.',
+    maestria:       'Maest.',
+    doctorado:      'Doct.'
+  };
+
+  /* ================================================================
+    FUNCIÓN PRINCIPAL DE CÁLCULO
+    Se llama cada vez que el usuario cambia cualquier campo.
+  ================================================================ */
+  function calcular() {
+
+    /* -- Leer valores del formulario -- */
+    const claveClase = parseInt(document.getElementById('clase').value);
+    const periodo    = document.getElementById('periodo').value;
+    const anios      = Math.max(0, parseInt(document.getElementById('antiguedad').value) || 0);
+    const tituloKey  = document.getElementById('titulo').value;
+    const hasCPP     = document.getElementById('cpp').checked;
+    const hasAsist   = document.getElementById('asistencia').checked;
+    const hasMD      = document.getElementById('mayordedicacion').checked;
+    const hasZona    = document.getElementById('zona').checked;
+    const hasFam     = document.getElementById('asignfam').checked;
+
+    /* -- Valor base de la clase -- */
+    const clase = CLASES[periodo][claveClase] || 0;
+
+    /* -- Cálculo de haberes -- */
+    const tituloRate  = TITULO_RATES[tituloKey];
+    const titulo      = clase * tituloRate;
+    const antiguedad  = clase * anios * 0.026;               // 2.6% por año
+    const cpp         = hasCPP ? clase * 0.40 : 0;           // 40% de clase
+    const presentismo = (clase + titulo + antiguedad) * 0.10; // 10% de (clase+titulo+antig)
+    const asistencia  = hasAsist ? presentismo * 0.15 : 0;   // 15% del presentismo
+    const dto1723     = (clase + titulo + antiguedad + cpp + presentismo) * 0.255;
+    const dto2585     = (clase + titulo + antiguedad + cpp + presentismo + dto1723) * 0.13;
+    const adic3179    = ADIC3179[periodo] || 0;
+    const zona        = hasZona ? clase * 0.60 : 0;          // 60% de clase
+    const mayorDed    = hasMD ? (clase + antiguedad + titulo) * 0.50 : 0;
+    const asigFam     = hasFam ? 180 : 0;
+
+    /* -- Total bruto -- */
+    const bruto = clase + titulo + antiguedad + cpp + presentismo +
+                  asistencia + dto1723 + dto2585 + adic3179 +
+                  zona + mayorDed + asigFam;
+
+    /* -- Descuentos -- */
+    const jubilacion = bruto * 0.11;   // 11% jubilación
+    const osep       = bruto * 0.06;   // 5% cuota + 0.25% catastróf. + 0.75% discap.
+    const cuota      = bruto * 0.02;   // 2% cuota judicial (base pendiente confirmación)
+    const fijos      = 1912;           // IPV + seguro mutual
+
+    const totalDesc = jubilacion + osep + cuota + fijos;
+
+    /* -- Neto -- */
+    const neto = bruto - totalDesc;
+
+    /* -- Actualizar la pantalla -- */
+    set('res-bruto',    pesos(bruto));
+    set('res-neto',     pesos(neto));
+    set('bd-clase',     pesos(clase));
+    set('bd-titulo',    pesos(titulo));
+    set('bd-antig',     pesos(antiguedad));
+    set('bd-pres',      pesos(presentismo));
+    set('bd-asist',     hasAsist ? pesos(asistencia) : inactivo('sin asistencia perfecta'));
+    set('bd-dto1723',   pesos(dto1723));
+    set('bd-dto2585',   pesos(dto2585));
+    set('bd-3179',      pesos(adic3179));
+    set('bd-bruto-sub', pesos(bruto));
+    set('bd-jubil',     negativo(jubilacion));
+    set('bd-osep',      negativo(osep));
+    set('bd-cuota',     negativo(cuota));
+    set('bd-neto-sub',  pesos(neto));
+
+    set('badge-titulo-tipo', TITULO_LABELS[tituloKey] || '');
+    set('badge-anios', anios + (anios === 1 ? ' año' : ' años'));
+
+    /* CPP */
+    if (hasCPP) {
+      set('bd-cpp', pesos(cpp));
+      document.getElementById('bd-cpp').className = 'linea-valor';
+    } else {
+      set('bd-cpp', 'no aplica');
+      document.getElementById('bd-cpp').className = 'linea-valor inactivo';
+    }
+
+    /* Zona */
+    if (hasZona) {
+      set('bd-zona', pesos(zona));
+      document.getElementById('bd-zona').className = 'linea-valor';
+    } else {
+      set('bd-zona', 'no aplica');
+      document.getElementById('bd-zona').className = 'linea-valor inactivo';
+    }
+
+    /* Mayor dedicación */
+    if (hasMD) {
+      set('bd-md', pesos(mayorDed));
+      document.getElementById('bd-md').className = 'linea-valor';
+    } else {
+      set('bd-md', 'no aplica');
+      document.getElementById('bd-md').className = 'linea-valor inactivo';
+    }
+
+    /* Asignación familiar */
+    set('bd-fam', hasFam ? pesos(180) : '—');
+  }
+
+  /* ================================================================
+    FUNCIONES AUXILIARES
+  ================================================================ */
+
+  /* Formatea un número como pesos argentinos: $ 123.456 */
+  function pesos(n) {
+    return '$ ' + Math.round(n).toLocaleString('es-AR');
+  }
+
+  /* Formatea un descuento: − $ 12.345 */
+  function negativo(n) {
+    return '− $ ' + Math.round(n).toLocaleString('es-AR');
+  }
+
+  /* Texto para un concepto inactivo */
+  function inactivo(texto) {
+    return texto;
+  }
+
+  /* Escribe un valor en un elemento por su id */
+  function set(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = valor;
+  }
+
+  /* Calcula al cargar la página */
+  calcular();
+
+  /* ================================================================
+    ACTUALIZACIÓN DESDE GOOGLE SHEETS (opcional, comentado)
+    ---------------------------------------------------------------
+    Para activarlo:
+    1. Publicá tu hoja como CSV en Google Sheets
+    2. Pegá la URL en SHEET_URL
+    3. Descomentá el bloque fetch() de abajo
+    4. Comentá o borrá el objeto CLASES manual de arriba
+
+  const SHEET_URL = 'TU_URL_CSV_AQUI';
+
+  fetch(SHEET_URL)
+    .then(r => r.text())
+    .then(csv => {
+      const filas = csv.split('\n').map(f => f.split(','));
+      // Procesar filas y llenar CLASES dinámicamente
+      // (requiere que el sheet tenga un formato acordado)
+      calcular();
+    })
+    .catch(err => console.error('Error cargando datos:', err));
+  ================================================================ */
+</script>
+
+</body>
+</html>
